@@ -60,7 +60,7 @@ services:
     privileged: true
     restart: always
     networks:
-      scalian_training-net:
+      jenkins-net:
         aliases:
           - docker
     ports:
@@ -74,6 +74,20 @@ services:
     environment:
       - DOCKER_TLS_CERTDIR=/certs
 
+  artifactory:
+    image: sonatype/nexus3
+    ports:
+      - "40081:8081"
+    volumes:
+      - artifactory-data:/nexus-data
+    networks:
+      jenkins-net:
+        ipv4_address: 172.16.235.4
+        aliases:
+          - artifactory
+    hostname: artifactory
+    restart: always
+
 networks:
   jenkins-net:
     driver: bridge
@@ -86,5 +100,6 @@ volumes:
   seidopg-data:
   seidopgadmin-data:
   jenkins-data:
+  artifactory-data:
   jenkins-docker-certs:
   docker-graph-storage:

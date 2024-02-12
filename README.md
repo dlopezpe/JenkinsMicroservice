@@ -21,9 +21,9 @@ Datos:
 ### Instrucciones
 
 
-1. Crear token en el gitHub.com
+1. Tener operativo Jenkins, en este caso hemos obtado por dockerizado
    ```bash
-   https://github.com/settings/tokens
+   https://localhost:8080
 
 2. Construir la imagen de Docker:
 

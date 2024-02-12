@@ -11,7 +11,7 @@ public class Utils{
 
     private Utils() {throw new IllegalStateException("Utility class");}
 
-    public static String getTS(){
+    public static String getTimeStamp(){
         // Obtener la fecha y hora actual
         LocalDateTime now = LocalDateTime.now();
 
