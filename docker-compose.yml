@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: "postgres:13" # use latest official postgres version
+    restart: always
+    environment:
+      - POSTGRES_DB=seido_manager
+      - POSTGRES_USER=admin_db
+      - POSTGRES_PASSWORD=admin_12345678
+    ports:
+      - 5432:5432
+    volumes:
+      - seidopg-data:/var/lib/postgresql/data/
+  pgadmin:
+    image: dpage/pgadmin4:6.18
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@pgadmin.com"
+      PGADMIN_DEFAULT_PASSWORD: "password"
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - 15432:80
+    volumes:
+      - seidopgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+
+  jenkins:
+    build: .
+    restart: on-failure
+    networks:
+      - jenkins-net
+    hostname: jenkins
+    ports:
+      - 127.0.0.1:2345:2345
+      - 8080:8080
+      - 50000:50000
+    depends_on:
+      - dind
+      - artifactory
+    tty: true
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+      #- $HOME:/home
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+  jenkins-service-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jenkins-service-api  # Cambia el nombre del contenedor
+    ports:
+      - "8081:8081"
+
+  dind:
+    image: docker:dind
+    privileged: true
+    restart: always
+    networks:
+      scalian_training-net:
+        aliases:
+          - docker
+    ports:
+      - 2376:2376
+    tty: true
+    volumes:
+      - docker-graph-storage:/var/lib/docker
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client
+      - $HOME:/home
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+
+networks:
+  jenkins-net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.235.0/24
+
+volumes:
+  seidopg-data:
+  seidopgadmin-data:
+  jenkins-data:
+  jenkins-docker-certs:
+  docker-graph-storage:
