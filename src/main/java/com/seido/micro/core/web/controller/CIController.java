@@ -82,7 +82,7 @@ public class CIController {
         validateBuildMetadataResource(buildMetadataResource, false);
 
         // Lanza la CI
-        buildMetadataResource = jenkinsService.lanzarCI(buildMetadataResource.getJobName(), buildNumber, pathRepo, version);
+        buildMetadataResource = jenkinsService.lanzarCI(buildMetadataResource.getJobName());
 
         LOG.info("END: Rest service launchCI");
         HttpHeaders headers = createHeaders();
@@ -129,7 +129,7 @@ public class CIController {
         validateFormatVersion(buildMetadataResource.getVersion());
 
         // Lanza la CI
-        buildMetadataResource = jenkinsService.lanzarCI(jobName, buildNumber,pathRepo,version);
+        buildMetadataResource = jenkinsService.lanzarCI(jobName);
 
         LOG.info("END: Rest service launchCI");
         HttpHeaders headers = createHeaders();

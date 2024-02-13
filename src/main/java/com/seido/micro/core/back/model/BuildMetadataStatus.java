@@ -30,25 +30,16 @@ public enum BuildMetadataStatus {
      *
      *     UNKNOWN (Desconocido): El estado no puede determinarse o no se proporciona.
      */
-    SUCCESS("1","Éxito"),
-    FAILURE("2","Fallo"),
-    STABLE("4","Estable"),
-    UNSTABLE("5","Inestable"),
-    ABORTED("6","Cancelado"),
-    NOT_BUILT("7","No construido"),
-    IN_PROGRESS("8","En progreso. En construcción"),
-    QUEUED("9","En cola"),
-    UNKNOWN("10","Desconocido")
+
+    SUCCESS,
+    FAILURE,
+    STABLE,
+    UNSTABLE,
+    ABORTED,
+    NOT_BUILT,
+    IN_PROGRESS,
+    QUEUED,
+    UNKNOWN
     ;
-
-
-
-    private String codigo;
-    private String descripcion;
-
-    private BuildMetadataStatus(String codigo, String descripcion){
-        this.codigo = codigo;
-        this.descripcion = descripcion;
-    }
 
 }

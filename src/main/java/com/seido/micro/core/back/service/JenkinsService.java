@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.validation.Valid;
 import java.net.URI;
 import java.sql.Timestamp;
@@ -47,10 +49,7 @@ public class JenkinsService {
         this.buildMetadataRepository = buildMetadataRepository;
     }
 
-    public BuildMetadataResource lanzarCI(String jobName,
-                                          int buildNumber,
-                                          String pathRepo,
-                                          String version) throws ValidationException {
+    public BuildMetadataResource lanzarCI(String jobName) throws ValidationException {
         try {
             // Autenticación en Jenkins
             JenkinsServer jenkinsServer = new JenkinsServer(URI.create(jenkinsUrl), jenkinsUsername, jenkinsPassword);
@@ -58,56 +57,63 @@ public class JenkinsService {
             // Obtener detalles del job
             JobWithDetails job = jenkinsServer.getJob(jobName);
 
-            // Recoger la información del último build
-            Build build = job.getLastBuild();
-            int buildNumber = build.getNumber();
-            String buildName = build.details().getDisplayName();
-            String buildUrl = build.getUrl();
+            if (job != null) {
 
-            // Analizar el buildUrl para obtener el pathRepo y la versión
-            String[] urlParts = buildUrl.split("/");
-            String pathRepo = urlParts[urlParts.length - 2]; // Obtener el penúltimo segmento de la URL
-            String version = urlParts[urlParts.length - 1]; // Obtener el último segmento de la URL
+                // Recoger la información del último build
+                Build build = job.getLastBuild();
+                int buildNumber = build.getNumber();
+                String buildName = job.getName();
+                String buildUrl = build.getUrl();
 
-            // Obtener el estado del job
-            String jobStatus;
-            if (job.isInQueue()) {
-                jobStatus = BuildMetadataStatus.QUEUED.getDescripcion();
-            } else if (build.details().isBuilding()) {
-                jobStatus = BuildMetadataStatus.IN_PROGRESS.getDescripcion();
-            } else if (!job.hasLastSuccessfulBuildRun() || job.hasLastCompletedBuildRun()) {
-                jobStatus = BuildMetadataStatus.SUCCESS.getDescripcion();
-            } else if (job.hasLastFailedBuildRun()) {
-                jobStatus = BuildMetadataStatus.FAILURE.getDescripcion();
-            } else if (job.hasLastUnsuccessfulBuildRun()) {
-                jobStatus = BuildMetadataStatus.ABORTED.getDescripcion();
-            } else if (job.hasLastUnstableBuildRun()) {
-                jobStatus = BuildMetadataStatus.UNSTABLE.getDescripcion();
-            } else if (job.hasLastStableBuildRun()) {
-                jobStatus = BuildMetadataStatus.STABLE.getDescripcion();
-            } else {
-                jobStatus = BuildMetadataStatus.UNKNOWN.getDescripcion();
+                // Analizar el buildUrl para obtener el pathRepo y la versión
+                String[] urlParts = buildUrl.split("/");
+                String pathRepo = buildUrl; // Obtener el penúltimo segmento de la URL
+                String version = urlParts[urlParts.length - 1]; // Obtener el último segmento de la URL
+
+                // Obtener el estado del job
+                BuildMetadataStatus jobStatus;
+                if (job.isInQueue()) {
+                    jobStatus = BuildMetadataStatus.QUEUED;
+                } else if (build.details().isBuilding()) {
+                    jobStatus = BuildMetadataStatus.IN_PROGRESS;
+                } else if (!job.hasLastSuccessfulBuildRun() || job.hasLastCompletedBuildRun()) {
+                    jobStatus = BuildMetadataStatus.SUCCESS;
+                } else if (job.hasLastFailedBuildRun()) {
+                    jobStatus = BuildMetadataStatus.FAILURE;
+                } else if (job.hasLastUnsuccessfulBuildRun()) {
+                    jobStatus = BuildMetadataStatus.ABORTED;
+                } else if (job.hasLastUnstableBuildRun()) {
+                    jobStatus = BuildMetadataStatus.UNSTABLE;
+                } else if (job.hasLastStableBuildRun()) {
+                    jobStatus = BuildMetadataStatus.STABLE;
+                } else {
+                    jobStatus = BuildMetadataStatus.UNKNOWN;
+                }
+                // Imprimir la información
+                LOGGER.debug("ID del job: " + buildNumber);
+                LOGGER.debug("Nombre del job: " + buildName);
+                LOGGER.debug("Path del repositorio: " + pathRepo);
+                LOGGER.debug("Versión: " + version);
+                LOGGER.debug("Estado del job: " + jobStatus);
+
+                // Persistir la metadata del build
+                BuildMetadata buildMetadata = new BuildMetadata();
+
+                buildMetadata.setBuildNumber(buildNumber);
+                buildMetadata.setCreated_at(Timestamp.valueOf(Utils.getTimeStamp()));
+                buildMetadata.setJobName(buildName);
+                buildMetadata.setModified_at(Timestamp.valueOf(Utils.getTimeStamp()));
+                buildMetadata.setPathRepo(pathRepo);
+                buildMetadata.setVersion(version);
+                buildMetadata.setStatusBuild(BuildMetadataStatus.SUCCESS.name());
+
+
+                buildMetadataRepository.save(buildMetadata);
+
+                return mapper.map(buildMetadata, BuildMetadataResource.class);
+            }else{
+                throw new ValidationException("No se ha encontrado el siguiente job: "+ jobName);
             }
-            // Imprimir la información
-            LOGGER.debug("ID del job: " + buildNumber);
-            LOGGER.debug("Nombre del job: " + buildName);
-            LOGGER.debug("Path del repositorio: " + pathRepo);
-            LOGGER.debug("Versión: " + version);
-            LOGGER.debug("Estado del job: " + jobStatus);
-
-            // Persistir la metadata del build
-            BuildMetadata buildMetadata = new BuildMetadata();
-            buildMetadata.setBuildNumber(buildNumber);
-            buildMetadata.setJobName(buildName);
-            buildMetadata.setPathRepo(pathRepo);
-            buildMetadata.setVersion(version);
-            buildMetadata.setStatusBuild(jobStatus);
-
-            buildMetadata.setCreated_at(Timestamp.valueOf(Utils.getTimeStamp()));
-
-            buildMetadataRepository.save(buildMetadata);
-
-            return mapper.map(buildMetadata, BuildMetadataResource.class);
 
         }catch (Exception e){
             LOGGER.error(e);

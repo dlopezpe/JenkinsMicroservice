@@ -1,4 +1,4 @@
-create type state_type as enum ('NEW', 'STARTED', 'WAITING', 'FINISHED', 'DONE', 'ERROR', 'PAUSED');
+create type state_type as enum ('SUCCESS', 'FAILURE', 'STABLE', 'UNSTABLE', 'ABORTED', 'NOT_BUILT', 'IN_PROGRESS', 'QUEUED', 'UNKNOWN');
 
 CREATE TABLE build_metadata (
     id BIGSERIAL NOT NULL PRIMARY KEY, --Identificacion de la compilacion (número)

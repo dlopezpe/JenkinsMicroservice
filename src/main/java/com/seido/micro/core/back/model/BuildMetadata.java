@@ -20,24 +20,24 @@ public class BuildMetadata implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "job_name", nullable = true)
+    @Column(name = "job_name")
     private String jobName;
 
-    @Column(name = "build_number", nullable = true)
+    @Column(name = "build_number")
     private Integer buildNumber;
 
-    @Column(name = "path_repo", nullable = false)
+    @Column(name = "path_repo")
     private String pathRepo;
 
-    @Column(name = "version", nullable = false)
+    @Column(name = "version")
     private String version;
 
-    @Column(name = "status_build", nullable = false)
+    @Column(name = "status_build")
     private String statusBuild;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private Timestamp created_at;
 
-    @Column(name = "modified_at", nullable = true)
+    @Column(name = "modified_at")
     private Timestamp modified_at;
 }
