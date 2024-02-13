@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 @RequestMapping("/api/ci")
 public class CIController {
     private static final Logger LOG = LogManager.getLogger(CIController.class);
-    private static final String PATH_CI = "/{jobname}";
+    private static final String PATH_JOBNAME = "/{jobname}";
 
     @Autowired
     protected ModelMapper mapper;
@@ -50,26 +50,24 @@ public class CIController {
     }
 
     /**
-     * Create a new build in CI (jenkins)
+     * Get information a job with jobname only
      *
      * @param jobName Job name
      * @return ResponseEntity<>
      * @throws ValidationException ValidationException
      */
-    @ApiOperation(value = "Create a job with jobname only", response = BuildMetadataResource.class)
+    @ApiOperation(value = "Get information a job with jobname only", response = BuildMetadataResource.class)
     @ApiResponses(
             value = {
-                    @ApiResponse(
-                            code = HttpURLConnection.HTTP_CREATED,
-                            message = "Returns a buildMetadataResource"),
+                    @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Returns a buildMetadataResource"),
                     @ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad request"),
                     @ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Bad credentials"),
                     @ApiResponse(
                             code = HttpURLConnection.HTTP_INTERNAL_ERROR,
                             message = "Internal Server Error")
             })
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/launchCIJobName")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping()
     public ResponseEntity<BuildMetadataResource> launchCIJobName(@RequestParam @Valid String jobName)
             throws ValidationException {
 
@@ -78,18 +76,19 @@ public class CIController {
         LOG.info("Validate fields");
 
         // Is true validating all fields and false alone validated environment and scope
-        BuildMetadataResource buildMetadataResource =new BuildMetadataResource(jobName,null,null,null,null );
+        BuildMetadataResource buildMetadataResource =new BuildMetadataResource();
+        buildMetadataResource.setJobName(jobName);
         validateBuildMetadataResource(buildMetadataResource, false);
 
         // Lanza la CI
-        buildMetadataResource = jenkinsService.lanzarCI(buildMetadataResource.getJobName());
+        buildMetadataResource = jenkinsService.obtenerInformacionJob(buildMetadataResource.getJobName());
 
         LOG.info("END: Rest service launchCI");
         HttpHeaders headers = createHeaders();
 
         headers.setLocation(
                 ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path(PATH_CI)
+                        .path(PATH_JOBNAME)
                         .buildAndExpand(buildMetadataResource)
                         .toUri());
 
@@ -110,33 +109,30 @@ public class CIController {
             })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/launchCI")
-    public ResponseEntity<BuildMetadataResource> launchCI(@RequestParam @Valid int buildNumber,
-                                                          @RequestParam @Valid String jobName,
-                                                          @RequestParam @Valid String pathRepo,
-                                                          @RequestParam @Valid String version)
+    public ResponseEntity<BuildMetadataResource> launchCI(@RequestBody
+                                                              @Valid
+                                                              BuildMetadataResource buildMetadataResource)
             throws ValidationException {
 
 
         LOG.info("INIT: Rest service launchCI");
         LOG.info("Validate fields");
 
-        // Is true validating all fields and false alone validated environment and scope
-        BuildMetadataResource buildMetadataResource =new BuildMetadataResource(jobName,buildNumber,pathRepo,version,null );
+        // Is true validating all fields and false alone validated
         validateBuildMetadataResource(buildMetadataResource, true);
-
 
         //Validate format version
         validateFormatVersion(buildMetadataResource.getVersion());
 
         // Lanza la CI
-        buildMetadataResource = jenkinsService.lanzarCI(jobName);
+        buildMetadataResource = jenkinsService.lanzarCI(buildMetadataResource);
 
         LOG.info("END: Rest service launchCI");
         HttpHeaders headers = createHeaders();
 
         headers.setLocation(
                 ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path(PATH_CI)
+                        .path(PATH_JOBNAME)
                         .buildAndExpand(buildMetadataResource)
                         .toUri());
 

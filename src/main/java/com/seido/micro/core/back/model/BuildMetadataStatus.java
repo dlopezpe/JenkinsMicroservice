@@ -1,11 +1,8 @@
 package com.seido.micro.core.back.model;
 
-import lombok.Getter;
-
 /**
  * Define the values of the status of a Build Jenkins
  */
-@Getter
 public enum BuildMetadataStatus {
     /**
      * En la API de Jenkins, los trabajos (jobs) pueden tener varios estados según su estado actual.
@@ -40,6 +37,5 @@ public enum BuildMetadataStatus {
     IN_PROGRESS,
     QUEUED,
     UNKNOWN
-    ;
 
 }

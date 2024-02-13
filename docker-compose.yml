@@ -26,83 +26,93 @@ services:
       - postgres
 
   jenkins:
-    build: .
-    restart: on-failure
-    networks:
-      - jenkins-net
-    hostname: jenkins
+    image: jenkins/jenkins:lts
+    container_name: jenkins
     ports:
-      - 127.0.0.1:2345:2345
-      - 8080:8080
-      - 50000:50000
-    depends_on:
-      - dind
-      - artifactory
-    tty: true
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - GITHUB_USER=dlopezpe
+      - GITHUB_TOKEN=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
     volumes:
       - jenkins-data:/var/jenkins_home
-      - jenkins-docker-certs:/certs/client:ro
-      #- $HOME:/home
-    environment:
-      - DOCKER_HOST=tcp://docker:2376
-      - DOCKER_CERT_PATH=/certs/client
-      - DOCKER_TLS_VERIFY=1
 
-  dind:
-    image: docker:dind
-    privileged: true
-    restart: always
-    networks:
-      jenkins-net:
-        aliases:
-          - docker
-    ports:
-      - 2376:2376
-    tty: true
-    volumes:
-      - docker-graph-storage:/var/lib/docker
-      - jenkins-data:/var/jenkins_home
-      - jenkins-docker-certs:/certs/client
-      - $HOME:/home
-    environment:
-      - DOCKER_TLS_CERTDIR=/certs
-
-  artifactory:
-    image: sonatype/nexus3
-    ports:
-      - "40081:8081"
-    volumes:
-      - artifactory-data:/nexus-data
-    networks:
-      jenkins-net:
-        ipv4_address: 172.16.235.4
-        aliases:
-          - artifactory
-    hostname: artifactory
-    restart: always
-
-  #jenkins-service-api:
-  #  depends_on:
-  #    - jenkins
-  #  build:
-  #    context: .
-  #    dockerfile: Dockerfile
-  #  container_name: jenkins-service-api  # Cambia el nombre del contenedor
+  #jenkins:
+  #  build: .
+  #  restart: on-failure
+  #  networks:
+  #    - jenkins-net
+  #  hostname: jenkins
   #  ports:
-  #    - "8082:8082"
+  #    - 127.0.0.1:2345:2345
+  #    - 8080:8080
+  #    - 50000:50000
+  #  depends_on:
+  #    - dind
+  #    - artifactory
+  #  tty: true
+  #  volumes:
+  #    - jenkins-data:/var/jenkins_home
+  #    - jenkins-docker-certs:/certs/client:ro
+  #    #- $HOME:/home
+  #  environment:
+  #    - DOCKER_HOST=tcp://docker:2376
+  #    - DOCKER_CERT_PATH=/certs/client
+  #    - DOCKER_TLS_VERIFY=1
 
-networks:
-  jenkins-net:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.235.0/24
+ #dind:
+ #  image: docker:dind
+ #  privileged: true
+ #  restart: always
+ #  networks:
+ #    jenkins-net:
+ #      aliases:
+ #        - docker
+ #  ports:
+ #    - 2376:2376
+ #  tty: true
+ #  volumes:
+ #    - docker-graph-storage:/var/lib/docker
+ #    - jenkins-data:/var/jenkins_home
+ #    - jenkins-docker-certs:/certs/client
+ #    - $HOME:/home
+ #  environment:
+ #    - DOCKER_TLS_CERTDIR=/certs
+
+ #artifactory:
+ #  image: sonatype/nexus3
+ #  ports:
+ #    - "40081:8081"
+ #  volumes:
+ #    - artifactory-data:/nexus-data
+ #  networks:
+ #    jenkins-net:
+ #      ipv4_address: 172.16.235.4
+ #      aliases:
+ #        - artifactory
+ #  hostname: artifactory
+ #  restart: always
+
+  jenkins-service-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jenkins-service-api  # Cambia el nombre del contenedor
+    ports:
+      - "8082:8082"
+
+#networks:
+#  jenkins-net:
+#    driver: bridge
+#    ipam:
+#      driver: default
+#      config:
+#        - subnet: 172.16.235.0/24
 
 volumes:
   seidopg-data:
   seidopgadmin-data:
   jenkins-data:
-  artifactory-data:
-  jenkins-docker-certs:
-  docker-graph-storage:
+  #artifactory-data:
+  #jenkins-docker-certs:
+  #docker-graph-storage:

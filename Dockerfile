@@ -17,9 +17,6 @@ RUN mvn package
 # Fase de ejecución
 FROM openjdk:11-jre-slim
 
-# Establecer el directorio de trabajo
-WORKDIR /app
-
 # Copiar el JAR construido desde la fase de construcción
 COPY --from=build /app/target/jenkins-service-api-0.0.1-SNAPSHOT.jar /app/jenkins-service-api-0.0.1-SNAPSHOT.jar
 COPY application.yml /app/application.yml
@@ -38,17 +35,34 @@ LABEL image.name="jenkins_service_api" \
 CMD ["java", "-jar", "jenkins-service-api-0.0.1-SNAPSHOT.jar" , "--spring.config.name=application"]
 
 #Fase par jenkins
-FROM jenkins/jenkins:lts-jdk11
-USER root
-RUN apt-get update && apt-get install -y lsb-release
-RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
-  https://download.docker.com/linux/debian/gpg
-RUN echo "deb [arch=$(dpkg --print-architecture) \
-  signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
-  https://download.docker.com/linux/debian \
-  $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
-RUN apt-get update && apt-get install -y docker-ce-cli
-USER jenkins
+#FROM jenkins/jenkins:lts
+#USER root
+#RUN apt-get update && apt-get install -y lsb-release
+#RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
+#  https://download.docker.com/linux/debian/gpg
+#RUN echo "deb [arch=$(dpkg --print-architecture) \
+#  signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
+#  https://download.docker.com/linux/debian \
+#  $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+#RUN apt-get update && apt-get install -y docker-ce-cli
+#USER jenkins
 
-# Copia el archivo desde el contenedor a tu máquina local
-docker cp jenkinsmicroservice-jenkins-1:/var/jenkins_home/secrets/initialAdminPassword src/main/resources/jenkins/initialAdminPassword
+FROM jenkins/jenkins:lts
+
+# Copiar el script install-plugins.sh
+# Instalar plugins de Jenkins
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+WORKDIR /usr/share/jenkins/ref
+RUN PWD
+RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+
+
+# Instalar plugins de Jenkins
+RUN /usr/local/bin/install-plugins.sh git github build-with-parameters
+
+# Configurar usuario de GitHub y token de acceso (debes proporcionar estos valores)
+ENV GITHUB_USER dlopezpe
+ENV GITHUB_TOKEN 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
+
+# Iniciar Jenkins
+ENTRYPOINT /sbin/tini -- /usr/local/bin/jenkins.sh

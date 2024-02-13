@@ -1,6 +1,7 @@
 package com.seido.micro.core.back.model;
 
 import lombok.Data;
+import org.hibernate.annotations.ColumnTransformer;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -32,8 +33,23 @@ public class BuildMetadata implements Serializable {
     @Column(name = "version")
     private String version;
 
+    @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::state_type")
     @Column(name = "status_build")
-    private String statusBuild;
+    private BuildMetadataStatus statusBuild;
+
+    @Column(name = "took")
+    private Long took;
+
+    @Column(name = "estimated_duration")
+    private Long estimatedDuration;
+
+    @Column(name = "timestamp")
+    private Timestamp timestamp;
+
+    @Column(name = "log_build")
+    private String logBuild;
+
 
     @Column(name = "created_at")
     private Timestamp created_at;

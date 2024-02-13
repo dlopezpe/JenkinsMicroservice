@@ -47,11 +47,11 @@ spring:
     locations: classpath:db/migration
 
 jenkins:
+  #url: http://localhost:8080/job/p/build?token=mi_token
+  #url: http://localhost:8080/job/p/buildWithParameters?token=mi_token
   url: http://localhost:8080
   username: jenkins
   password: Pallas33
-  #11139b6e7f738ad4282c257e245dba1ab6
-
 
 ---
 spring:
