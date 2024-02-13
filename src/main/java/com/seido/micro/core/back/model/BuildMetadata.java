@@ -1,20 +1,18 @@
 package com.seido.micro.core.back.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
- * Entity for the table build_compilation
- * The table build_compilation is define
+ * Entity for the table build_metadata
+ * The table build_metadata is define
  */
 @Entity
-@Table(name = "build_compilation")
-@Getter
-@Setter
+@Table(name = "build_metadata")
+@Data
 public class BuildMetadata implements Serializable {
 
     @Id
@@ -41,5 +39,5 @@ public class BuildMetadata implements Serializable {
     private Timestamp created_at;
 
     @Column(name = "modified_at", nullable = true)
-    private Timestamp modified_at=null;
+    private Timestamp modified_at;
 }

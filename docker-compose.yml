@@ -47,13 +47,6 @@ services:
       - DOCKER_HOST=tcp://docker:2376
       - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
-  jenkins-service-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: jenkins-service-api  # Cambia el nombre del contenedor
-    ports:
-      - "8081:8081"
 
   dind:
     image: docker:dind
@@ -87,6 +80,16 @@ services:
           - artifactory
     hostname: artifactory
     restart: always
+
+  #jenkins-service-api:
+  #  depends_on:
+  #    - jenkins
+  #  build:
+  #    context: .
+  #    dockerfile: Dockerfile
+  #  container_name: jenkins-service-api  # Cambia el nombre del contenedor
+  #  ports:
+  #    - "8082:8082"
 
 networks:
   jenkins-net:

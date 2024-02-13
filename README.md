@@ -38,7 +38,25 @@ Datos:
 4. Acceder a la API Swagger:
 
    ```bash
-   http://localhost:8080/seido/swagger-ui.html
+   http://localhost:8082/seido/swagger-ui.html
+   
+5. Para Jenkins:
+   ```bash
+   http://localhost:8080/
+   
+Y dentro del contenedor de jenkins podremos ver la contraseña que nos genera, por ejemplo:
+
+2024-02-13 01:13:20 Jenkins initial setup is required. An admin user has been created and a password generated.
+2024-02-13 01:13:20 Please use the following password to proceed to installation:
+2024-02-13 01:13:20
+2024-02-13 01:13:20 547e12245a4f4780a439a21ec5841384
+..
+
+O también en el fichero 
+
+   ```bash
+   /var/jenkins_home/secrets/initialAdminPassword
+6. 
 
 ### Instrucciones para despliegue en forma Devops
 

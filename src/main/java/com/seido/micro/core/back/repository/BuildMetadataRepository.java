@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * JPARepository for the table build_compilation
- * The table build_compilation is define by the compilation and build about launch of Jeninks
+ * JPARepository for the table build_metadata
+ * The table build_metadata is define by the compilation and build about launch of Jeninks
  */
 public interface BuildMetadataRepository extends JpaRepository<BuildMetadata, Long>  {
     /**
@@ -24,6 +24,6 @@ public interface BuildMetadataRepository extends JpaRepository<BuildMetadata, Lo
      * @param status Send required parameter
      * @return List Builds jenkins
      */
-    public List<BuildMetadata> findByEnvAndScope(String name, String status);
+    public List<BuildMetadata> findByJobNameAndStatusBuild(String name, String status);
 
 }

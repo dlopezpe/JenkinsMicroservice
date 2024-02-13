@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.sql.Timestamp;
 
@@ -46,7 +47,10 @@ public class JenkinsService {
         this.buildMetadataRepository = buildMetadataRepository;
     }
 
-    public BuildMetadataResource lanzarCI(String jobName) throws ValidationException {
+    public BuildMetadataResource lanzarCI(String jobName,
+                                          int buildNumber,
+                                          String pathRepo,
+                                          String version) throws ValidationException {
         try {
             // Autenticación en Jenkins
             JenkinsServer jenkinsServer = new JenkinsServer(URI.create(jenkinsUrl), jenkinsUsername, jenkinsPassword);

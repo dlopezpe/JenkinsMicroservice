@@ -1,10 +1,7 @@
 package com.seido.micro.core.web.controller;
 
 
-import com.seido.micro.core.back.model.BuildMetadata;
-import com.seido.micro.core.back.repository.BuildMetadataRepository;
 import com.seido.micro.core.back.service.JenkinsService;
-import com.seido.micro.core.utils.Utils;
 import com.seido.micro.core.utils.exception.ValidationException;
 import com.seido.micro.core.utils.resource.BuildMetadataResource;
 import io.swagger.annotations.ApiOperation;
@@ -72,7 +69,7 @@ public class CIController {
                             message = "Internal Server Error")
             })
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/launchCI")
+    @PostMapping("/launchCIJobName")
     public ResponseEntity<BuildMetadataResource> launchCIJobName(@RequestParam @Valid String jobName)
             throws ValidationException {
 
@@ -85,7 +82,7 @@ public class CIController {
         validateBuildMetadataResource(buildMetadataResource, false);
 
         // Lanza la CI
-        buildMetadataResource = jenkinsService.lanzarCI(buildMetadataResource.getJobName());
+        buildMetadataResource = jenkinsService.lanzarCI(buildMetadataResource.getJobName(), buildNumber, pathRepo, version);
 
         LOG.info("END: Rest service launchCI");
         HttpHeaders headers = createHeaders();
@@ -113,7 +110,8 @@ public class CIController {
             })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/launchCI")
-    public ResponseEntity<BuildMetadataResource> launchCI(@RequestParam @Valid String jobName,
+    public ResponseEntity<BuildMetadataResource> launchCI(@RequestParam @Valid int buildNumber,
+                                                          @RequestParam @Valid String jobName,
                                                           @RequestParam @Valid String pathRepo,
                                                           @RequestParam @Valid String version)
             throws ValidationException {
@@ -123,7 +121,7 @@ public class CIController {
         LOG.info("Validate fields");
 
         // Is true validating all fields and false alone validated environment and scope
-        BuildMetadataResource buildMetadataResource =new BuildMetadataResource(jobName,null,pathRepo,version,null );
+        BuildMetadataResource buildMetadataResource =new BuildMetadataResource(jobName,buildNumber,pathRepo,version,null );
         validateBuildMetadataResource(buildMetadataResource, true);
 
 
@@ -131,7 +129,7 @@ public class CIController {
         validateFormatVersion(buildMetadataResource.getVersion());
 
         // Lanza la CI
-        buildMetadataResource = jenkinsService.lanzarCI(buildMetadataResource.getJobName());
+        buildMetadataResource = jenkinsService.lanzarCI(jobName, buildNumber,pathRepo,version);
 
         LOG.info("END: Rest service launchCI");
         HttpHeaders headers = createHeaders();

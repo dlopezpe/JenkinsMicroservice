@@ -3,7 +3,10 @@ spring.jackson.serialization.INDENT_OUTPUT: true
 
 #Server port
 server:
-  port: 8081
+  port: 8082
+  servlet:
+    #Seteamos el contexto para llamarlo http://localhost:8080/seido/xxxx
+    context-path: /seido/
 
 spring:
   application:
@@ -30,8 +33,13 @@ spring:
   jpa:
     show-sql: true
     properties:
-      hibernate.jdbc.lob.non_contextual_creation: true
-      hibernate.format_sql: true
+      hibernate:
+        ddl-auto: update
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          lob:
+            non_contextual_creation: true
 
   # Configuración de Flyway
   flyway:
@@ -41,7 +49,7 @@ spring:
 jenkins:
   url: http://localhost:8080
   username: jenkins
-  password: jenkins
+  password: Pallas33
 
 
 ---

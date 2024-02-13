@@ -1,17 +1,20 @@
 package com.seido.micro.core.back.dao;
 
+import com.seido.micro.core.back.model.BuildMetadata;
+import com.seido.micro.core.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
  * Class Template JobDao
  */
-public class JdbcTemplateJobDao implements Dao<Jobs> {
+public class JdbcTemplateJobDao implements Dao<BuildMetadata> {
     private DataSource dataSource;
     private JdbcTemplate jdbcTemplate;
 
@@ -30,46 +33,44 @@ public class JdbcTemplateJobDao implements Dao<Jobs> {
 
 
     @Override
-    public void save(Jobs job) {
-     String sql = "insert into JOBS (container_id,env,scope ,sandbox,params_json,date_insert ,date_init,date_end," +
-            "date_killed,id_execution ,resume,state,status,priority ,retries) " +
-            "values (?, ?, ?,?,?, ?, ?,?,?, ?, ?,?,?, ?)";
+    public void save(BuildMetadata build) {
+     String sql = "insert into build_metadata (id,job_name,build_number ,path_repo ,version ,status_buil,created_at ) " +
+            "values (?, ?, ?,?, ?, ?, ?)";
 
-        jdbcTemplate.update(sql,  job.getContainerId(),
-                job.getEnv(),job.getScope(),job.getSandbox(),job.getParamsJson(),job.getDateInsert(),job.getDateInit(),
-                job.getDateEnd(),job.getDateKilled(),job.getIdExecution(),job.isResume(),job.getState(),
-                job.getStatus(),job.getPriority(),job.getRetries());
+        jdbcTemplate.update(sql,  build.getId(),build.getJobName(),build.getBuildNumber(),build.getPathRepo(),
+                build.getVersion(),build.getStatusBuild(), Timestamp.valueOf(Utils.getTimeStamp()));
     }
 
     @Override
-    public Jobs load(long id) {
+    public BuildMetadata load(long id) {
         return null;
     }
 
     @Override
     public void delete(long id) {
-        String sql = "delete from JOBS" +
+        String sql = "delete from build_metadata" +
                 "WHERE where id=?";
 
-        jdbcTemplate.update(sql, id);
-    }
-
-    @Override
-    public void update(Jobs job) {
-        String updateFields="status="+job.getStatus();
-
-        String sql = "update JOBS set "+ updateFields +" where id=?";
-
-        jdbcTemplate.update(sql,  job.getId());
+        jdbcTemplate.update(sql,  id);
 
     }
 
     @Override
-    public List<Jobs> loadAll() {
-        String sql="select * from JOBS";
+    public void update(BuildMetadata build) {
+        String updateFields="status_build="+build.getStatusBuild();
+
+        String sql = "update build_metadata set "+ updateFields +" where job_name=?";
+
+        jdbcTemplate.update(sql,  build.getJobName());
+
+    }
+
+    @Override
+    public List<BuildMetadata> loadAll() {
+        String sql="select * from build_metadata";
 
         return getJdbcTemplate().query(sql,
-                new BeanPropertyRowMapper(Jobs.class));
+                new BeanPropertyRowMapper(BuildMetadata.class));
     }
 
 
