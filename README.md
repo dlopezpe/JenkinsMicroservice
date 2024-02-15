@@ -81,6 +81,14 @@ Datos:
    datasource.username: admin_db
    datasource.password: admin_12345678
    
+   OJO!!!
+   La propiedad datasource.url para probarlo en local lo hemos de cambiar a:
+     
+   ```bash
+   datasource.url: jdbc:postgresql://localhost:5432/seido_manager
+
+Y en caso de utilizarlo en Producción/Integración exponerlo tal y como se ha informado anteriormente
+
 7. Las demás configuraciones y propiedades son externa y configurables
 
 ### Instrucciones para despliegue en forma Devops
