@@ -28,7 +28,7 @@ COPY application.yml /app/application.yml
 COPY src/main/resources/db/migration/* /app/db/migration/
 
 # Exponer el puerto en el que la aplicación se ejecutará
-EXPOSE 8081
+EXPOSE 808
 # Nombre de la imagen y etiqueta
 LABEL image.name="jenkins_service_api" \
       image.tag="v0.0.1"

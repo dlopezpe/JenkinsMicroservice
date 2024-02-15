@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: "postgres:13" # use latest official postgres version
+    image: "postgres:13"
     restart: always
     environment:
       - POSTGRES_DB=seido_manager
@@ -34,11 +34,9 @@ services:
     volumes:
       - jenkins-data:/var/jenkins_home
     environment:
-      - GITHUB_USER=dlopezpe
-      - GITHUB_TOKEN=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
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
       - JENKINS_USER=admin
-      - JENKINS_PASS=e4310232ef864cb7be06d2004e17b5f1
+      - JENKINS_PASS=
       - JENKINS_INSTALL_PLUGINS=build-with-parameters:latest,github:latest,git:latest,customize-build-now:latest
     restart: always
 

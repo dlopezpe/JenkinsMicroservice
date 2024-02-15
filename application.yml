@@ -51,7 +51,7 @@ jenkins:
   #url: http://localhost:8080/job/p/buildWithParameters?token=mi_token
   url: http://localhost:8080
   username: admin
-  password: e4310232ef864cb7be06d2004e17b5f1
+  password:
 
 ---
 spring:

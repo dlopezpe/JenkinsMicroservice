@@ -1,3 +1,0 @@
-git:latest
-github:latest
-build-with-parameters:latest
