@@ -1,3 +1,10 @@
+<!-- TOC -->
+* [Create Build Microservice](#create-build-microservice)
+    * [Instrucciones](#instrucciones)
+    * [Instrucciones para despliegue en forma Devops](#instrucciones-para-despliegue-en-forma-devops)
+    * [Cosas a tener en cuenta:](#cosas-a-tener-en-cuenta)
+<!-- TOC -->
+
 # Create Build Microservice
 
 Este microservicio se comunica con otra API o directamente con Jenkins para lanzar una CI. La metadata del build se persiste.
@@ -21,9 +28,9 @@ Datos:
 ### Instrucciones
 
 
-1. Crear token en el gitHub.com
+1. Tener operativo Jenkins, en este caso hemos obtado por dockerizado
    ```bash
-   https://github.com/settings/tokens
+   https://localhost:8080
 
 2. Construir la imagen de Docker:
 
@@ -33,16 +40,72 @@ Datos:
 3. Ejecutar el contenedor:
 
    ```bash
-   docker run -p 8080:8080 jenkins_service_api:v0.0.1
+   docker run -p 8081:8081 jenkins_service_api:v0.0.1
 
 4. Acceder a la API Swagger:
 
    ```bash
-   http://localhost:8080/seido/swagger-ui.html
+   http://localhost:8081/seido/swagger-ui.html
+   
+5. Para Jenkins:
+   ```bash
+   http://localhost:8080/
+   
+   Y dentro del contenedor de jenkins podremos ver la contraseña que nos genera, por ejemplo:
+   
+   2024-02-13 01:13:20 Jenkins initial setup is required. An admin user has been created and a password generated.
+   2024-02-13 01:13:20 Please use the following password to proceed to installation:
+   2024-02-13 01:13:20
+   2024-02-13 01:13:20 547e12245a4f4780a439a21ec5841384
+   ..
+   
+   O también en el fichero 
+
+   ```bash
+   /var/jenkins_home/secrets/initialAdminPassword
+   
+   Para obtener el usuario y la contraseña que disponemos de la imagen de docker:
+   
+   ```bash
+   docker cp jenkins:/var/jenkins_home/secrets/initialAdminPassword src/main/resources/jenkins/initialAdminPassword
+   
+   El usuario lo disponemos en application.yml:
+   jenkins.url: http://localhost:8080
+   jenkins.username: admin
+   jenkins.password: (el contenido del fichero initialAdminPassword)
+   
+6. Postgres lo disponemos dockerizado también para la persistencia exigida:
+
+   ```bash
+   datasource.url: jdbc:postgresql://jenkinsmicroservice-postgres-1:5432/seido_manager
+   datasource.username: admin_db
+   datasource.password: admin_12345678
+   
+   OJO!!!
+   La propiedad datasource.url para probarlo en local lo hemos de cambiar a:
+     
+   ```bash
+   datasource.url: jdbc:postgresql://localhost:5432/seido_manager
+
+Y en caso de utilizarlo en Producción/Integración exponerlo tal y como se ha informado anteriormente
+
+7. Las demás configuraciones y propiedades son externa y configurables
 
 ### Instrucciones para despliegue en forma Devops
 
 Estando en la ruta del proyecto que nos hayamos descargado lanzamos este script sh:
 
- ```bash
-   $ ./launch_local.sh
+    ```bash
+      $ ./launch_local.sh
+
+Este script levanta teniendo el docker desktop que he utilizado levantado, las siguientes imagenes:
+- El servicio jenkins-service-api expuesto al puerto 8081
+- El servicio jenkins expuesto al puerto 8080 y 50000
+- El servicio postgres expuesto al puerto 5432
+- El servicio pgadmin expuesto al puerto 15432
+
+### Cosas a tener en cuenta:
+
+No se ha podido completar los test a causa de fuerza mayor y falta de tiempo.
+Se ha realizado pruebas integradas levantando el docker, teniendo postgres, jenkins dockerizados
+y ver que se creaba un build en jenkins indicandole los parametros exigidos de entrada.

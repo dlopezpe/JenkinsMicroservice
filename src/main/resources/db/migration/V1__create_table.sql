@@ -1,6 +1,6 @@
-create type state_type as enum ('NEW', 'STARTED', 'WAITING', 'FINISHED', 'DONE', 'ERROR', 'PAUSED');
+create type state_type as enum ('SUCCESS', 'FAILURE', 'STABLE', 'UNSTABLE', 'ABORTED', 'NOT_BUILT', 'IN_PROGRESS', 'QUEUED', 'UNKNOWN');
 
-CREATE TABLE build_compilation (
+CREATE TABLE build_metadata (
     id BIGSERIAL NOT NULL PRIMARY KEY, --Identificacion de la compilacion (número)
     job_name VARCHAR(255) NOT NULL, --Nombre del build (cadena - solo letras)
     build_number INTEGER NOT NULL, --Número del build
@@ -10,4 +10,4 @@ CREATE TABLE build_compilation (
     created_at timestamp NOT NULL,
     modified_at timestamp
 );
-create unique index "build_compilation_idx" on "build_compilation" ("id");
+create unique index "build_metadata_idx" on "build_metadata" ("id");

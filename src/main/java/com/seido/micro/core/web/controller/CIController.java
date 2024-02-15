@@ -1,10 +1,7 @@
 package com.seido.micro.core.web.controller;
 
 
-import com.seido.micro.core.back.model.BuildMetadata;
-import com.seido.micro.core.back.repository.BuildMetadataRepository;
 import com.seido.micro.core.back.service.JenkinsService;
-import com.seido.micro.core.utils.Utils;
 import com.seido.micro.core.utils.exception.ValidationException;
 import com.seido.micro.core.utils.resource.BuildMetadataResource;
 import io.swagger.annotations.ApiOperation;
@@ -35,7 +32,7 @@ import java.util.regex.Pattern;
 @RequestMapping("/api/ci")
 public class CIController {
     private static final Logger LOG = LogManager.getLogger(CIController.class);
-    private static final String PATH_CI = "/{jobname}";
+    private static final String PATH_JOBNAME = "/{jobname}";
 
     @Autowired
     protected ModelMapper mapper;
@@ -46,9 +43,6 @@ public class CIController {
     @Autowired
     private JenkinsService jenkinsService;
 
-    @Autowired
-    private BuildMetadataRepository buildMetadataRepository;
-
     protected static HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
@@ -56,12 +50,51 @@ public class CIController {
     }
 
     /**
-     * Create a new build in CI (jenkins)
+     * Get information a job with jobname only
      *
      * @param jobName Job name
      * @return ResponseEntity<>
      * @throws ValidationException ValidationException
      */
+    @ApiOperation(value = "Get information a job with jobname only", response = BuildMetadataResource.class)
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Returns a buildMetadataResource"),
+                    @ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Bad request"),
+                    @ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Bad credentials"),
+                    @ApiResponse(
+                            code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+                            message = "Internal Server Error")
+            })
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping()
+    public ResponseEntity<BuildMetadataResource> launchCIJobName(@RequestParam @Valid String jobName)
+            throws ValidationException {
+
+
+        LOG.info("INIT: Rest service launchCI");
+        LOG.info("Validate fields");
+
+        // Is true validating all fields and false alone validated environment and scope
+        BuildMetadataResource buildMetadataResource =new BuildMetadataResource();
+        buildMetadataResource.setJobName(jobName);
+        validateBuildMetadataResource(buildMetadataResource, false);
+
+        // Lanza la CI
+        buildMetadataResource = jenkinsService.obtenerInformacionJob(buildMetadataResource.getJobName());
+
+        LOG.info("END: Rest service launchCI");
+        HttpHeaders headers = createHeaders();
+
+        headers.setLocation(
+                ServletUriComponentsBuilder.fromCurrentRequest()
+                        .path(PATH_JOBNAME)
+                        .buildAndExpand(buildMetadataResource)
+                        .toUri());
+
+        return new ResponseEntity<>(buildMetadataResource, headers, HttpStatus.CREATED);
+    }
+
     @ApiOperation(value = "Create a job for build in CI (Jenkins)", response = BuildMetadataResource.class)
     @ApiResponses(
             value = {
@@ -76,34 +109,30 @@ public class CIController {
             })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/launchCI")
-    public ResponseEntity<BuildMetadataResource> launchCI(@RequestParam String jobName)
+    public ResponseEntity<BuildMetadataResource> launchCI(@RequestBody
+                                                              @Valid
+                                                              BuildMetadataResource buildMetadataResource)
             throws ValidationException {
 
 
         LOG.info("INIT: Rest service launchCI");
         LOG.info("Validate fields");
 
-        // Is true validating all fields and false alone validated environment and scope
-        BuildMetadataResource buildMetadataResource =new BuildMetadataResource(jobName,null,null,null,null );
-        validateBuildMetadataResource(buildMetadataResource, false);
+        // Is true validating all fields and false alone validated
+        validateBuildMetadataResource(buildMetadataResource, true);
+
+        //Validate format version
+        validateFormatVersion(buildMetadataResource.getVersion());
 
         // Lanza la CI
-        buildMetadataResource = jenkinsService.lanzarCI(buildMetadataResource.getJobName());
-
-        // Persiste la metadata del build
-        BuildMetadata buildMetadata = new BuildMetadata();
-        buildMetadata.setJobName(jobName);
-
-
-        // Puedes configurar otros campos de metadata aquí
-        buildMetadataRepository.save(buildMetadata);
+        buildMetadataResource = jenkinsService.lanzarCI(buildMetadataResource);
 
         LOG.info("END: Rest service launchCI");
         HttpHeaders headers = createHeaders();
 
         headers.setLocation(
                 ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path(PATH_CI)
+                        .path(PATH_JOBNAME)
                         .buildAndExpand(buildMetadataResource)
                         .toUri());
 
@@ -168,6 +197,14 @@ public class CIController {
         return matcher.matches();
     }
 
+    private static boolean verificarSoloLetras(String cadena) {
+        return cadena.matches("[a-zA-Z]+");
+    }
+
+    private static boolean contieneBackslash(String pathRepo) {
+        // Verificar si la cadena contiene el carácter \
+        return pathRepo.contains("\\");
+    }
 
     /**
      * Validate all fields or alone depends if create or find to query
@@ -187,6 +224,19 @@ public class CIController {
         }
 
         if (allFields) {
+            //Verify only letters
+            if (!verificarSoloLetras(nexec.getJobName())) {
+                msg.append("JobName has only letters\n");
+            }
+
+            // Verify PathRepo not null of empty
+            if (StringUtils.isEmpty(nexec.getPathRepo())) {
+                msg.append("PathRepo cannot be empty or null\n");
+            }
+
+            if (!contieneBackslash(nexec.getPathRepo())) {
+                msg.append("PathRepo hasnot contains \\ \n");
+            }
 
         }
     }

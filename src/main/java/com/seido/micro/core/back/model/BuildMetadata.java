@@ -1,20 +1,19 @@
 package com.seido.micro.core.back.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import org.hibernate.annotations.ColumnTransformer;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
- * Entity for the table build_compilation
- * The table build_compilation is define
+ * Entity for the table build_metadata
+ * The table build_metadata is define
  */
 @Entity
-@Table(name = "build_compilation")
-@Getter
-@Setter
+@Table(name = "build_metadata")
+@Data
 public class BuildMetadata implements Serializable {
 
     @Id
@@ -22,24 +21,39 @@ public class BuildMetadata implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "job_name", nullable = true)
+    @Column(name = "job_name")
     private String jobName;
 
-    @Column(name = "build_number", nullable = true)
+    @Column(name = "build_number")
     private Integer buildNumber;
 
-    @Column(name = "path_repo", nullable = false)
+    @Column(name = "path_repo")
     private String pathRepo;
 
-    @Column(name = "version", nullable = false)
+    @Column(name = "version")
     private String version;
 
-    @Column(name = "status_build", nullable = false)
-    private String statusBuild;
+    @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::state_type")
+    @Column(name = "status_build")
+    private BuildMetadataStatus statusBuild;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "took")
+    private Long took;
+
+    @Column(name = "estimated_duration")
+    private Long estimatedDuration;
+
+    @Column(name = "timestamp")
+    private Timestamp timestamp;
+
+    @Column(name = "log_build")
+    private String logBuild;
+
+
+    @Column(name = "created_at")
     private Timestamp created_at;
 
-    @Column(name = "modified_at", nullable = true)
-    private Timestamp modified_at=null;
+    @Column(name = "modified_at")
+    private Timestamp modified_at;
 }

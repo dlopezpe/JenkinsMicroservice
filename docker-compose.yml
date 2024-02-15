@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: "postgres:13" # use latest official postgres version
+    image: "postgres:13"
     restart: always
     environment:
       - POSTGRES_DB=seido_manager
@@ -26,28 +26,23 @@ services:
       - postgres
 
   jenkins:
-    build: .
-    restart: on-failure
-    networks:
-      - jenkins-net
-    hostname: jenkins
+    image: jenkins/jenkins:lts
+    container_name: jenkins
     ports:
-      - 127.0.0.1:2345:2345
-      - 8080:8080
-      - 50000:50000
-    depends_on:
-      - dind
-      - artifactory
-    tty: true
+      - "8080:8080"
+      - "50000:50000"
     volumes:
       - jenkins-data:/var/jenkins_home
-      - jenkins-docker-certs:/certs/client:ro
-      #- $HOME:/home
     environment:
-      - DOCKER_HOST=tcp://docker:2376
-      - DOCKER_CERT_PATH=/certs/client
-      - DOCKER_TLS_VERIFY=1
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - JENKINS_USER=admin
+      - JENKINS_PASS=
+      - JENKINS_INSTALL_PLUGINS=build-with-parameters:latest,github:latest,git:latest,customize-build-now:latest
+    restart: always
+
   jenkins-service-api:
+    depends_on:
+      - postgres
     build:
       context: .
       dockerfile: Dockerfile
@@ -55,36 +50,7 @@ services:
     ports:
       - "8081:8081"
 
-  dind:
-    image: docker:dind
-    privileged: true
-    restart: always
-    networks:
-      scalian_training-net:
-        aliases:
-          - docker
-    ports:
-      - 2376:2376
-    tty: true
-    volumes:
-      - docker-graph-storage:/var/lib/docker
-      - jenkins-data:/var/jenkins_home
-      - jenkins-docker-certs:/certs/client
-      - $HOME:/home
-    environment:
-      - DOCKER_TLS_CERTDIR=/certs
-
-networks:
-  jenkins-net:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.235.0/24
-
 volumes:
   seidopg-data:
   seidopgadmin-data:
   jenkins-data:
-  jenkins-docker-certs:
-  docker-graph-storage:

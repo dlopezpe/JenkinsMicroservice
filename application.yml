@@ -4,6 +4,9 @@ spring.jackson.serialization.INDENT_OUTPUT: true
 #Server port
 server:
   port: 8081
+  servlet:
+    #Seteamos el contexto para llamarlo http://localhost:8081/seido/xxxx
+    context-path: /seido/
 
 spring:
   application:
@@ -23,15 +26,20 @@ spring:
 
   # Configuración de la base de datos
   datasource:
-    url: jdbc:postgresql://localhost:5432/seido_manager
+    url: jdbc:postgresql://jenkinsmicroservice-postgres-1:5432/seido_manager
     username: admin_db
     password: admin_12345678
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
     properties:
-      hibernate.jdbc.lob.non_contextual_creation: true
-      hibernate.format_sql: true
+      hibernate:
+        ddl-auto: update
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          lob:
+            non_contextual_creation: true
 
   # Configuración de Flyway
   flyway:
@@ -39,10 +47,11 @@ spring:
     locations: classpath:db/migration
 
 jenkins:
+  #url: http://localhost:8080/job/p/build?token=mi_token
+  #url: http://localhost:8080/job/p/buildWithParameters?token=mi_token
   url: http://localhost:8080
-  username: jenkins
-  password: jenkins
-
+  username: admin
+  password:
 
 ---
 spring:
